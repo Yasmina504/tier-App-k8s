@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: tier-app
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tier-app
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: tier-app
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        image: tier-app-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://myuser:mypassword@db-service:5432/tierapp"
+        - name: NODE_ENV
+          value: "production"
+        command: ["/bin/sh", "-c"]
+        args:
+          - |
+            echo "=== Testing Database Connection ==="
+            # اختبرى ال database connection أولاً
+            python3 -c "
+            import os, psycopg2, time
+            url = os.getenv('DATABASE_URL')
+            print(f'Database URL: {url}')
+            
+            for i in range(5):
+                try:
+                    print(f'Attempt {i+1} to connect...')
+                    conn = psycopg2.connect(url)
+                    print('✅ SUCCESS: Database connected!')
+                    conn.close()
+                    break
+                except Exception as e:
+                    print(f'❌ Attempt {i+1} failed: {e}')
+                    time.sleep(5)
+            else:
+                print('🚨 All connection attempts failed')
+                exit(1)
+            "
+            
+            echo "=== Starting Main Application ==="
+            python app.py

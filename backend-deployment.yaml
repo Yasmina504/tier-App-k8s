@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  labels:
+    app: tier-app
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tier-app
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: tier-app
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        image: tier-app-backend:latest
+        imagePullPolicy: Never  # ⬅️ ضيفي هذا السطر
+        ports:
+        - containerPort: 5000
+        env:
+        - name: DATABASE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: DATABASE_URL
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: backend-config
+              key: NODE_ENV

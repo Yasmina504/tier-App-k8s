@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+data:
+  DATABASE_URL: "postgresql://myuser:mypassword@db-service:5432/tierapp"
+  NODE_ENV: "production"
